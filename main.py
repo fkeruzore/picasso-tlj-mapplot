@@ -10,28 +10,41 @@ from pathlib import Path
 import cmocean
 
 # Patch parameters
-CENTER_RA_DEG = 0.0
-CENTER_DEC_DEG = 0.0
+CENTER_RA_DEG = 20.0
+CENTER_DEC_DEG = 20.0
 X_SIZE_DEG = 3.0
 Y_SIZE_DEG = 9.0
 RESOLUTION_ARCMIN = 0.5
 
 MAP_CONFIGS = [
     (
-        "./halos_test.h5",
+        # "./halos_test.h5",
+        "/home/fkeruzore/SkySimz/picasso-tlj/LJLC_TSZ/"
+        "8192_theta3.0t200_all-m/halos.h5",
         {"type": "halos", "cmap": "berlin", "label": "Redshift $z$"},
     ),
     (
-        "./map_tsz.fits",
-        {"cmap": cmocean.cm.tempo, "vmin": 0, "vmax": 0.1, "label": "tSZ y"},
+        "/home/fkeruzore/SkySimz/picasso-tlj/LJLC_TSZ/"
+        "8192_theta3.0t200_all-m/coadded_map.all.fits",
+        {
+            "cmap": cmocean.cm.tempo,
+            "vmin": 0,
+            "vmax": 5e-6,
+            "label": "tSZ $y$",
+        },
     ),
     (
         "./map_ksz.fits",
-        {"cmap": cmocean.cm.balance, "vmin": -0.1, "vmax": 0.1, "label": "kSZ b"},
+        {
+            "cmap": cmocean.cm.balance,
+            "vmin": -0.1,
+            "vmax": 0.1,
+            "label": "kSZ $b$",
+        },
     ),
     (
         "./map_lensing.fits",
-        {"cmap": cmocean.cm.ice, "vmin": 0, "vmax": 0.1, "label": r"Lensing $\kappa$"},
+        {"cmap": cmocean.cm.ice, "vmin": 0, "vmax": 0.1, "label": "Lensing"},
     ),
     (
         "./map_cib.fits",
@@ -47,13 +60,18 @@ MAP_CONFIGS = [
 def gnomonic_patch(
     m, center_ra_deg, center_dec_deg, x_size_deg, y_size_deg, resolution_arcmin
 ):
-    """Return a gnomonic (flat-sky) projection of healpix map m as a 2D array."""
+    """Return a gnomonic (flat-sky) projection of healpix map m as a
+    2D array."""
     n_x = int(round(x_size_deg * 60 / resolution_arcmin))
     n_y = int(round(y_size_deg * 60 / resolution_arcmin))
 
     # Tangent-plane offsets in radians
-    xi = np.linspace(-np.radians(x_size_deg) / 2, np.radians(x_size_deg) / 2, n_x)
-    eta = np.linspace(-np.radians(y_size_deg) / 2, np.radians(y_size_deg) / 2, n_y)
+    xi = np.linspace(
+        -np.radians(x_size_deg) / 2, np.radians(x_size_deg) / 2, n_x
+    )
+    eta = np.linspace(
+        -np.radians(y_size_deg) / 2, np.radians(y_size_deg) / 2, n_y
+    )
     xi_grid, eta_grid = np.meshgrid(xi, eta)
 
     # Center in radians; healpy uses colatitude theta and longitude phi
@@ -70,7 +88,9 @@ def gnomonic_patch(
     sin_t0 = np.sin(theta0)
 
     # Declination of each pixel
-    sin_dec = cos_c * cos_t0 - eta_grid * sin_c * sin_t0 / np.where(rho == 0, 1, rho)
+    sin_dec = cos_c * cos_t0 - eta_grid * sin_c * sin_t0 / np.where(
+        rho == 0, 1, rho
+    )
     sin_dec = np.where(rho == 0, cos_t0, sin_dec)
     dec = np.arcsin(np.clip(sin_dec, -1, 1))
 
@@ -111,10 +131,10 @@ def _set_degree_ticks(ax):
 
 def plot_halos(catalog_path, cosmo_args, ax):
     with h5py.File(catalog_path) as f:
-        ra = f["RA"][:]
-        dec = f["dec"][:]
-        z = f["z"][:]
-        theta_200c = f["theta_200c"][:]
+        ra = f["RA(deg)"][:]
+        dec = f["DEC(deg)"][:]
+        z = 1.0 / f["a"][:] - 1.0
+        theta_200c = f["theta200c"][:] * 60 * 180 / np.pi  # arcmin
 
     # Forward gnomonic projection to pixel coordinates
     dec0 = np.radians(CENTER_DEC_DEG)
@@ -122,16 +142,23 @@ def plot_halos(catalog_path, cosmo_args, ax):
     phi = np.radians(ra)
     d = np.radians(dec)
 
-    cos_c = np.sin(dec0) * np.sin(d) + np.cos(dec0) * np.cos(d) * np.cos(phi - phi0)
+    cos_c = np.sin(dec0) * np.sin(d) + np.cos(dec0) * np.cos(d) * np.cos(
+        phi - phi0
+    )
     xi = np.cos(d) * np.sin(phi - phi0) / cos_c
     eta = (
-        np.cos(dec0) * np.sin(d) - np.sin(dec0) * np.cos(d) * np.cos(phi - phi0)
+        np.cos(dec0) * np.sin(d)
+        - np.sin(dec0) * np.cos(d) * np.cos(phi - phi0)
     ) / cos_c
 
     n_x = int(round(X_SIZE_DEG * 60 / RESOLUTION_ARCMIN))
     n_y = int(round(Y_SIZE_DEG * 60 / RESOLUTION_ARCMIN))
-    x_pix = (xi + np.radians(X_SIZE_DEG) / 2) / np.radians(X_SIZE_DEG) * (n_x - 1)
-    y_pix = (eta + np.radians(Y_SIZE_DEG) / 2) / np.radians(Y_SIZE_DEG) * (n_y - 1)
+    x_pix = (
+        (xi + np.radians(X_SIZE_DEG) / 2) / np.radians(X_SIZE_DEG) * (n_x - 1)
+    )
+    y_pix = (
+        (eta + np.radians(Y_SIZE_DEG) / 2) / np.radians(Y_SIZE_DEG) * (n_y - 1)
+    )
     r_pix = theta_200c / RESOLUTION_ARCMIN
 
     norm = Normalize(vmin=z.min(), vmax=z.max())
@@ -200,7 +227,9 @@ def plot_map(map_or_path, cosmo_args, ax):
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("bottom", size="5%", pad=0.05)
-    plt.colorbar(im, cax=cax, orientation="horizontal", label=cosmo_args["label"])
+    plt.colorbar(
+        im, cax=cax, orientation="horizontal", label=cosmo_args["label"]
+    )
 
 
 def main():
