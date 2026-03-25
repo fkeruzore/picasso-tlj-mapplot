@@ -8,6 +8,7 @@ from matplotlib.colors import Normalize
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from pathlib import Path
 import cmocean
+import seaborn as sns
 
 # Patch parameters
 CENTER_RA_DEG = 20.0
@@ -34,17 +35,17 @@ MAP_CONFIGS = [
         },
     ),
     (
-        "./map_ksz.fits",
+        "/data/a/cpac/prlarsen/sharing/ksz_LJ/ksz_map_paper.fits",
         {
-            "cmap": cmocean.cm.balance,
-            "vmin": -0.1,
-            "vmax": 0.1,
+            "cmap": sns.diverging_palette(220, 20, as_cmap=True),
+            "vmin": -5e-6,
+            "vmax": 5e-6,
             "label": "kSZ $b$",
         },
     ),
     (
-        "./map_lensing.fits",
-        {"cmap": cmocean.cm.ice, "vmin": 0, "vmax": 0.1, "label": "Lensing"},
+        "/data/a/cpac/prlarsen/sharing/ksz_LJ/kappa_CMB.fits",
+        {"cmap": cmocean.cm.ice, "vmin": -0.5, "vmax": 2.0, "label": "Lensing"},
     ),
     (
         "./map_cib.fits",
