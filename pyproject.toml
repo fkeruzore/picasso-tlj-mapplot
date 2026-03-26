@@ -10,6 +10,7 @@ dependencies = [
     "matplotlib",
     "h5py",
     "cmocean>=4.0.3",
+    "seaborn"
 ]
 
 [dependency-groups]
