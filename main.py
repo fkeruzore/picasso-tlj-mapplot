@@ -89,7 +89,7 @@ def gnomonic_patch(
     sin_t0 = np.sin(theta0)
 
     # Declination of each pixel
-    sin_dec = cos_c * cos_t0 - eta_grid * sin_c * sin_t0 / np.where(
+    sin_dec = cos_c * cos_t0 + eta_grid * sin_c * sin_t0 / np.where(
         rho == 0, 1, rho
     )
     sin_dec = np.where(rho == 0, cos_t0, sin_dec)
@@ -97,7 +97,7 @@ def gnomonic_patch(
 
     # Right ascension of each pixel
     numerator = xi_grid * sin_c
-    denominator = rho * sin_t0 * cos_c + eta_grid * cos_t0 * sin_c
+    denominator = rho * sin_t0 * cos_c - eta_grid * cos_t0 * sin_c
     denominator = np.where(rho == 0, 1, denominator)
     ra = phi0 + np.arctan2(numerator, denominator)
     ra = np.where(rho == 0, phi0, ra)
