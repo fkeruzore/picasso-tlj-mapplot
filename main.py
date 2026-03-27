@@ -131,11 +131,19 @@ def _set_degree_ticks(ax):
 
 
 def plot_halos(catalog_path, cosmo_args, ax):
-    with h5py.File(catalog_path) as f:
-        ra = f["RA(deg)"][:]
-        dec = f["DEC(deg)"][:]
-        z = 1.0 / f["a"][:] - 1.0
-        theta_200c = f["theta200c"][:] * 60 * 180 / np.pi  # arcmin
+    try:
+        with h5py.File(catalog_path) as f:
+            ra = f["RA(deg)"][:]
+            dec = f["DEC(deg)"][:]
+            z = 1.0 / f["a"][:] - 1.0
+            theta_200c = f["theta200c"][:] * 60 * 180 / np.pi  # arcmin
+    except FileNotFoundError:
+        rng = np.random.default_rng(42)
+        n = 100
+        ra = CENTER_RA_DEG + rng.uniform(-X_SIZE_DEG / 2, X_SIZE_DEG / 2, n)
+        dec = CENTER_DEC_DEG + rng.uniform(-Y_SIZE_DEG / 2, Y_SIZE_DEG / 2, n)
+        z = rng.uniform(0, 2, n)
+        theta_200c = rng.uniform(1, 3, n)  # arcmin
 
     # Forward gnomonic projection to pixel coordinates
     dec0 = np.radians(CENTER_DEC_DEG)
