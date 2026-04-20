@@ -180,7 +180,8 @@ def plot_halos(catalog_path, cosmo_args, ax):
     )
     r_pix = theta_200c / RESOLUTION_ARCMIN
 
-    norm = Normalize(vmin=z.min(), vmax=z.max())
+    # norm = Normalize(vmin=z.min(), vmax=z.max())
+    norm = Normalize(vmin=0.0, vmax=2.0)
     cmap = plt.get_cmap(cosmo_args["cmap"])
 
     ax.set_xlim(-0.5, n_x - 0.5)
