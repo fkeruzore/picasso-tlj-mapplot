@@ -45,15 +45,25 @@ MAP_CONFIGS = [
     ),
     (
         "/data/a/cpac/prlarsen/sharing/ksz_LJ/kappa_CMB.fits",
-        {"cmap": cmocean.cm.ice, "vmin": -0.5, "vmax": 2.0, "label": "Lensing"},
+        {
+            "cmap": cmocean.cm.ice,
+            "vmin": 0.0,  # -0.5,
+            "vmax": 1.0,
+            "label": "Lensing $\\kappa$",
+        },
     ),
     (
         "./map_cib.fits",
-        {"cmap": cmocean.cm.thermal, "vmin": 0, "vmax": 0.1, "label": "CIB"},
+        {"cmap": cmocean.cm.thermal, "vmin": 0.0, "vmax": 1.0, "label": "CIB"},
     ),
     (
         "./map_radio.fits",
-        {"cmap": cmocean.cm.dense_r, "vmin": 0, "vmax": 0.1, "label": "Radio"},
+        {
+            "cmap": cmocean.cm.dense_r,
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "label": "Radio",
+        },
     ),
 ]
 
@@ -209,6 +219,7 @@ def plot_halos(catalog_path, cosmo_args, ax):
 def plot_map(map_or_path, cosmo_args, ax):
     if isinstance(map_or_path, (str, Path)):
         try:
+            # m = hp.read_map("./toto.toto")
             m = hp.read_map(map_or_path)
         except FileNotFoundError:
             m = hp.read_map("./map_test.fits")
@@ -242,7 +253,7 @@ def plot_map(map_or_path, cosmo_args, ax):
 
 
 def main():
-    fig, axes = plt.subplots(1, 6, figsize=(18, 7), sharex=True, sharey=True)
+    fig, axes = plt.subplots(1, 6, figsize=(15, 8), sharex=True, sharey=True)
     for ax, (path, cosmo_args) in zip(axes, MAP_CONFIGS):
         if cosmo_args.get("type") == "halos":
             plot_halos(path, cosmo_args, ax)
@@ -254,7 +265,7 @@ def main():
         plt.setp(ax.get_yticklabels(), visible=False)
 
     fig.tight_layout()
-    fig.subplots_adjust(wspace=0.01)
+    fig.subplots_adjust(top=0.925, bottom=0.075, wspace=0.01)
     renderer = fig.canvas.get_renderer()
     fig_h_px = fig.get_size_inches()[1] * fig.dpi
     top = max(ax.get_tightbbox(renderer).ymax for ax in axes) / fig_h_px
@@ -269,6 +280,12 @@ def main():
     plt.savefig("sky_components.png", dpi=150)  # , bbox_inches="tight")
     plt.show()
 
+    caxs = fig.get_axes()[-6:]
+    fig.align_xlabels(caxs)
+
+    return fig
+
 
 if __name__ == "__main__":
-    main()
+    plt.rcParams["font.family"] = "serif"
+    fig = main()
