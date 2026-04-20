@@ -277,7 +277,7 @@ def main():
         va="bottom",
         fontsize=plt.rcParams["axes.labelsize"],
     )
-    plt.savefig("sky_components.png", dpi=150)  # , bbox_inches="tight")
+    plt.savefig("sky_components.png", dpi=300)  # , bbox_inches="tight")
     plt.show()
 
     caxs = fig.get_axes()[-6:]
