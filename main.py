@@ -19,7 +19,6 @@ RESOLUTION_ARCMIN = 0.5
 
 MAP_CONFIGS = [
     (
-        # "./halos_test.h5",
         "/home/fkeruzore/SkySimz/picasso-tlj/LJLC_TSZ/"
         "8192_theta3.0t200_all-m/halos.h5",
         {"type": "halos", "cmap": "berlin", "label": "Redshift $z$"},
@@ -47,22 +46,29 @@ MAP_CONFIGS = [
         "/data/a/cpac/prlarsen/sharing/ksz_LJ/kappa_CMB.fits",
         {
             "cmap": cmocean.cm.ice,
-            "vmin": 0.0,  # -0.5,
+            "vmin": 0.0,
             "vmax": 1.0,
             "label": "Lensing $\\kappa$",
         },
     ),
     (
-        "./map_cib.fits",
-        {"cmap": cmocean.cm.thermal, "vmin": 0.0, "vmax": 1.0, "label": "CIB"},
+        "/data/a/cpac/mcampitiello/SZ_maps/CIB/map_CIB_SPT_150GHz.fits",
+        {
+            "cmap": cmocean.cm.thermal,
+            "label": "CIB",
+            "auto_range": True,
+            "map_type": "cib",
+        },
     ),
     (
-        "./map_radio.fits",
+        "/data/a/cpac/mcampitiello/SZ_maps/Radio_source/map_150GHz.fits",
         {
             "cmap": cmocean.cm.dense_r,
-            "vmin": 0.0,
-            "vmax": 1.0,
             "label": "Radio",
+            "auto_range": True,
+            "map_type": "radio",
+           # "stretch": "asinh",
+           # "stretch_scale": 0.002,
         },
     ),
 ]
@@ -217,10 +223,23 @@ def plot_halos(catalog_path, cosmo_args, ax):
     )
 
 
+def get_auto_range(patch, map_type):
+    finite_vals = patch[np.isfinite(patch)]
+
+    if finite_vals.size == 0:
+        return 0.0, 1.0
+
+    if map_type == "cib":
+        return np.percentile(finite_vals, [1, 99.5])
+    elif map_type == "radio":
+        return np.percentile(finite_vals, [95, 99.9])
+    else:
+        return np.percentile(finite_vals, [1, 99])
+
+
 def plot_map(map_or_path, cosmo_args, ax):
     if isinstance(map_or_path, (str, Path)):
         try:
-            # m = hp.read_map("./toto.toto")
             m = hp.read_map(map_or_path)
         except FileNotFoundError:
             m = hp.read_map("./map_test.fits")
@@ -236,11 +255,26 @@ def plot_map(map_or_path, cosmo_args, ax):
         RESOLUTION_ARCMIN,
     )
 
+    if cosmo_args.get("stretch") == "asinh":
+        finite_vals = patch[np.isfinite(patch)]
+        if finite_vals.size > 0:
+            scale = cosmo_args.get(
+                "stretch_scale",
+                np.percentile(finite_vals, 95) / 10,
+            )
+            patch = np.arcsinh(patch / scale)
+
+    if cosmo_args.get("auto_range", False):
+        vmin, vmax = get_auto_range(patch, cosmo_args.get("map_type"))
+    else:
+        vmin = cosmo_args["vmin"]
+        vmax = cosmo_args["vmax"]
+
     im = ax.imshow(
         patch,
         cmap=cosmo_args["cmap"],
-        vmin=cosmo_args["vmin"],
-        vmax=cosmo_args["vmax"],
+        vmin=vmin,
+        vmax=vmax,
         origin="lower",
     )
 
@@ -278,7 +312,7 @@ def main():
         va="bottom",
         fontsize=plt.rcParams["axes.labelsize"],
     )
-    plt.savefig("sky_components.png", dpi=300)  # , bbox_inches="tight")
+    plt.savefig("sky_components.png", dpi=300)
     plt.show()
 
     caxs = fig.get_axes()[-6:]
