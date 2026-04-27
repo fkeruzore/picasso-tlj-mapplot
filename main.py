@@ -82,8 +82,12 @@ def gnomonic_patch(
     n_y = int(round(y_size_deg * 60 / resolution_arcmin))
 
     # Tangent-plane offsets in radians
-    xi = np.linspace(-np.radians(x_size_deg) / 2, np.radians(x_size_deg) / 2, n_x)
-    eta = np.linspace(-np.radians(y_size_deg) / 2, np.radians(y_size_deg) / 2, n_y)
+    xi = np.linspace(
+        -np.radians(x_size_deg) / 2, np.radians(x_size_deg) / 2, n_x
+    )
+    eta = np.linspace(
+        -np.radians(y_size_deg) / 2, np.radians(y_size_deg) / 2, n_y
+    )
     xi_grid, eta_grid = np.meshgrid(xi, eta)
 
     # Center in radians; healpy uses colatitude theta and longitude phi
@@ -100,7 +104,9 @@ def gnomonic_patch(
     sin_t0 = np.sin(theta0)
 
     # Declination of each pixel
-    sin_dec = cos_c * cos_t0 + eta_grid * sin_c * sin_t0 / np.where(rho == 0, 1, rho)
+    sin_dec = cos_c * cos_t0 + eta_grid * sin_c * sin_t0 / np.where(
+        rho == 0, 1, rho
+    )
     sin_dec = np.where(rho == 0, cos_t0, sin_dec)
     dec = np.arcsin(np.clip(sin_dec, -1, 1))
 
@@ -160,16 +166,23 @@ def plot_halos(catalog_path, cosmo_args, ax):
     phi = np.radians(ra)
     d = np.radians(dec)
 
-    cos_c = np.sin(dec0) * np.sin(d) + np.cos(dec0) * np.cos(d) * np.cos(phi - phi0)
+    cos_c = np.sin(dec0) * np.sin(d) + np.cos(dec0) * np.cos(d) * np.cos(
+        phi - phi0
+    )
     xi = np.cos(d) * np.sin(phi - phi0) / cos_c
     eta = (
-        np.cos(dec0) * np.sin(d) - np.sin(dec0) * np.cos(d) * np.cos(phi - phi0)
+        np.cos(dec0) * np.sin(d)
+        - np.sin(dec0) * np.cos(d) * np.cos(phi - phi0)
     ) / cos_c
 
     n_x = int(round(X_SIZE_DEG * 60 / RESOLUTION_ARCMIN))
     n_y = int(round(Y_SIZE_DEG * 60 / RESOLUTION_ARCMIN))
-    x_pix = (xi + np.radians(X_SIZE_DEG) / 2) / np.radians(X_SIZE_DEG) * (n_x - 1)
-    y_pix = (eta + np.radians(Y_SIZE_DEG) / 2) / np.radians(Y_SIZE_DEG) * (n_y - 1)
+    x_pix = (
+        (xi + np.radians(X_SIZE_DEG) / 2) / np.radians(X_SIZE_DEG) * (n_x - 1)
+    )
+    y_pix = (
+        (eta + np.radians(Y_SIZE_DEG) / 2) / np.radians(Y_SIZE_DEG) * (n_y - 1)
+    )
     r_pix = theta_200c / RESOLUTION_ARCMIN
 
     # norm = Normalize(vmin=z.min(), vmax=z.max())
@@ -268,7 +281,9 @@ def plot_map(map_or_path, cosmo_args, ax):
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("bottom", size="5%", pad=0.05)
-    plt.colorbar(im, cax=cax, orientation="horizontal", label=cosmo_args["label"])
+    plt.colorbar(
+        im, cax=cax, orientation="horizontal", label=cosmo_args["label"]
+    )
 
 
 def main():
@@ -308,8 +323,10 @@ def main():
     for txt in fig.texts:
         txt.set_visible(False)
 
+    # fig, ax = plt.subplots()
     for ax in axes:
-        # ax.axis('off')
+        for spine in ax.spines.values():
+            spine.set_edgecolor("#00000000")
         ax.set_xlabel("")
         ax.set_ylabel("")
         ax.set_xticks([])
