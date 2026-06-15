@@ -9,6 +9,14 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from pathlib import Path
 import cmocean
 import seaborn as sns
+from tqdm import trange
+
+plt.style.use("petroff10")
+plt.rc("text", usetex=True)
+plt.rc("font", family="serif")
+plt.rc("text.latex", preamble=r"\usepackage{txfonts}")
+plt.rc("xtick", direction="in")
+plt.rc("ytick", direction="in")
 
 # Patch parameters
 CENTER_RA_DEG = 20.0
@@ -207,6 +215,7 @@ def plot_halos(catalog_path, cosmo_args, ax):
                 edgecolor=cmap(norm(zp)),
                 facecolor="none",
                 linewidth=0.5,
+                rasterized=True
             )
         )
 
@@ -275,6 +284,7 @@ def plot_map(map_or_path, cosmo_args, ax):
         vmin=vmin,
         vmax=vmax,
         origin="lower",
+        rasterized=True
     )
 
     _set_degree_ticks(ax)
@@ -287,8 +297,12 @@ def plot_map(map_or_path, cosmo_args, ax):
 
 
 def main():
-    fig, axes = plt.subplots(1, 6, figsize=(15, 8), sharex=True, sharey=True)
-    for ax, (path, cosmo_args) in zip(axes, MAP_CONFIGS):
+    # fig, axes = plt.subplots(1, 6, figsize=(15, 8), sharex=True, sharey=True)
+    fig, axes = plt.subplots(1, 6, figsize=(9.4, 5), sharex=True, sharey=True)
+    # for ax, (path, cosmo_args) in zip(axes, MAP_CONFIGS):
+    for i in trange(6):
+        ax = axes[i]
+        path, cosmo_args = MAP_CONFIGS[i]
         if cosmo_args.get("type") == "halos":
             plot_halos(path, cosmo_args, ax)
         else:
@@ -318,6 +332,7 @@ def main():
 
     # Save main figure with axes, ticks, text, and colorbars
     plt.savefig("sky_components.png", dpi=300)
+    plt.savefig("sky_components.pdf", dpi=300)
 
     # Save clean version without axes, ticks, text, and colorbars
     for txt in fig.texts:
