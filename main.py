@@ -34,7 +34,7 @@ MAP_CONFIGS = [
         "/home/fkeruzore/SkySimz/picasso-tlj/LJLC_TSZ/"
         "8192_theta3.0t200_all-m/coadded_map.all.fits",
         {
-            "cmap": plt.cm.pink_r,
+            "cmap": plt.cm.pink,
             "vmin": 0,
             "vmax": 5e-6,
             "label": "tSZ $y$",
@@ -54,8 +54,10 @@ MAP_CONFIGS = [
         {
             "cmap": cmocean.cm.ice,
             "vmin": 0.0,
-            "vmax": 1.0,
+            "vmax": 0.5,
             "label": "Lensing $\\kappa$",
+            # "log": True,
+            # "auto_range": True,
         },
     ),
     (
@@ -72,7 +74,9 @@ MAP_CONFIGS = [
         {
             "cmap": cmocean.cm.dense_r,
             "label": "Radio",
-            "auto_range": True,
+            # "auto_range": True,
+            "vmin": 0.0,
+            "vmax": 2e3,
             "map_type": "radio",
             # "stretch": "asinh",
             # "stretch_scale": 0.002,
@@ -271,6 +275,9 @@ def plot_map(map_or_path, cosmo_args, ax):
                 np.percentile(finite_vals, 95) / 10,
             )
             patch = np.arcsinh(patch / scale)
+
+    if cosmo_args.get("log"):
+        patch = np.log10(patch)
 
     if cosmo_args.get("auto_range", False):
         vmin, vmax = get_auto_range(patch, cosmo_args.get("map_type"))
