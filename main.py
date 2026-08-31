@@ -34,7 +34,7 @@ MAP_CONFIGS = [
         "/home/fkeruzore/SkySimz/picasso-tlj/LJLC_TSZ/"
         "8192_theta3.0t200_all-m/coadded_map.all.fits",
         {
-            "cmap": cmocean.cm.tempo,
+            "cmap": plt.cm.pink_r,
             "vmin": 0,
             "vmax": 5e-6,
             "label": "tSZ $y$",
@@ -215,7 +215,7 @@ def plot_halos(catalog_path, cosmo_args, ax):
                 edgecolor=cmap(norm(zp)),
                 facecolor="none",
                 linewidth=0.5,
-                rasterized=True
+                rasterized=True,
             )
         )
 
@@ -284,7 +284,7 @@ def plot_map(map_or_path, cosmo_args, ax):
         vmin=vmin,
         vmax=vmax,
         origin="lower",
-        rasterized=True
+        rasterized=True,
     )
 
     _set_degree_ticks(ax)
